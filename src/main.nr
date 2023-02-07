@@ -1,5 +1,6 @@
 /// An intepreter for a simple query language allowing for combining comparison operations with `AND`
 /// E.g. (birth_date > 18) AND (birth_date <= 50)
+/// Attrubutes are encoded by numbers and assumed to be resolved from human-redable at a pre-processing stage
 
 use dep::std;
 
@@ -93,9 +94,13 @@ fn main(query: pub AndQuery,
         com_vec: pub [Field; MAX_NUM_OF_ATTRS * 2], // vector of commitments pairs `(Field, Field)` are stored in a flat array
         claim: PrivateClaimInfo) {
     let mut res: bool = true;
+    let mut stop_flag: bool = false;
     let n = std::array::len(query.ops);
     for i in 0..n-1 {
-       if query.ops[i] == STOP { // terminate early, if hit STOP
+       if (query.ops[i] == STOP) | stop_flag {
+           // if hit STOP, set the stop_flag so the rest of the loop is just constraining to the same `res`
+           // NOTE: it seems there is no way of exiting the loop in Noir
+           stop_flag = true;
            constrain res;
        } else {
            let attr_index = query.attrs[i];
