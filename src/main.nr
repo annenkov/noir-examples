@@ -67,15 +67,17 @@ fn get_commitment(xs: [Field; MAX_NUM_OF_ATTRS * 2], i: u8) -> [Field;2] {
 
 
 fn iterp_bin_op(op: BinOp, claim: PrivateClaimInfo) -> bool {
+    // Interpret `DATE_OF_BIRTH` as `i32` value and compare with the corresponding attribute value
     if (op.kind == EQ) & (op.attribute == DATE_OF_BIRTH) {
-        (op.val as i32) == (claim.attrs[0] as i32)
+        op.val as i32 == claim.attrs[0] as i32
     } else {
         if (op.kind == LEQ) & (op.attribute == DATE_OF_BIRTH) {
-        (op.val as i32) <= (claim.attrs[0] as i32)
+        op.val as i32 <= claim.attrs[0] as i32
         } else {
             if (op.kind == GT) & (op.attribute == DATE_OF_BIRTH) {
-            (op.val as i32) > (claim.attrs[0] as i32)
+            op.val as i32 > claim.attrs[0] as i32
             } else {
+                constrain false; // fail the proof
                 false
             }
         }
@@ -98,7 +100,7 @@ fn main(query: pub AndQuery,
     let n = std::array::len(query.ops);
     for i in 0..n-1 {
        if (query.ops[i] == STOP) | stop_flag {
-           // if hit STOP, set the stop_flag so the rest of the loop is just constraining to the same `res`
+           // if hit STOP, set the `stop_flag` so the rest of the loop is just constraining to the same `res`
            // NOTE: it seems there is no way of exiting the loop in Noir
            stop_flag = true;
            constrain res;
